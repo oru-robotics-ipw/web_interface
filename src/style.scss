@@ -1,0 +1,68 @@
+/*
+ * Örebro University IPW robot web interface
+ * Copyright (C) 2019  Arvid Norlander
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@import '~bootstrap';
+
+$icon-font-path: '~open-iconic/font/fonts/';
+@import "~open-iconic/font/css/open-iconic-bootstrap.scss";
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 500px;
+
+  * {
+    position: absolute;
+  }
+
+  canvas {
+    top: 0;
+    left: 0;
+  }
+}
+
+// This is for floating alerts on top of the main map view
+.floating-alert {
+  top: 5%;
+  left: 25%;
+  width: 50%;
+  text-align: center;
+}
+
+.semi-transparent {
+  opacity: 85%;
+}
+
+.child-px3 > div {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+#locations-table > tr > td {
+  vertical-align: middle;
+}
+
+#locations-table > tr > td:last-child {
+  text-align: right;
+}
+
+.div-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

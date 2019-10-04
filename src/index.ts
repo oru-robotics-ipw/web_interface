@@ -1,0 +1,148 @@
+/*
+ * Örebro University IPW robot web interface
+ * Copyright (C) 2019  Arvid Norlander
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import 'bootstrap';
+
+import jQuery from 'jquery';
+import {Ros, TFClient} from 'roslib';
+import {Control, DrivingControls} from "./control";
+import {Locations} from "./locations";
+import {Map} from "./map";
+import {People} from "./people";
+import {Robot} from "./robot";
+import './style.scss';
+import {SystemStatus} from './system_status';
+import {get_css, update_alert_status} from "./utils";
+
+// Resize canvases based on window size.
+function resize_to_window(element: HTMLCanvasElement): void {
+    element.width = window.innerWidth - parseInt(get_css('main', 'padding-left'))
+        - parseInt(get_css('main', 'padding-right'));
+    element.height = window.innerHeight - parseInt(get_css('header', 'height'))
+        - parseInt(get_css('main', 'margin-top'))
+        - parseInt(get_css('main', 'margin-bottom'));
+}
+
+// Connecting to ROS
+// -----------------
+
+const ros = new Ros({
+    url: 'wss://automower2:9090',
+    groovyCompatibility: false,
+});
+
+const main_alert = document.getElementById("connection-alert");
+
+ros.on('connection', function () {
+    update_alert_status(main_alert, false, "Connected", 'alert-success');
+    console.log('Connected to websocket server.');
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ros.on('error', function (error: any) {
+    update_alert_status(main_alert, true, "Failed to connect", 'alert-danger');
+    console.log('Error connecting to websocket server: ', error);
+});
+
+ros.on('close', function () {
+    update_alert_status(main_alert, true, "Not connected", 'alert-danger');
+    console.log('Connection to websocket server closed.');
+});
+
+// Global TF client
+const tf_client = new TFClient({
+    ros: ros,
+    fixedFrame: 'map',
+    angularThres: 0.01,
+    transThres: 0.01
+});
+
+
+// Objects handling the canvas layers
+const map = new Map(<HTMLCanvasElement>document.getElementById('map'), ros, 'maps/map.png');
+const robot = new Robot(<HTMLCanvasElement>document.getElementById('robot'), ros, map, tf_client);
+const people = new People(<HTMLCanvasElement>document.getElementById('people'), ros, map, tf_client);
+
+const layers = [map, robot, people];
+
+const status = new SystemStatus({
+    ros: ros,
+    system_status_element: document.getElementById('system-status'),
+    battery_status_element: document.getElementById('battery-status'),
+    disable_on_dock_buttons: [
+        <HTMLButtonElement>document.getElementById('btn-go'),
+        <HTMLButtonElement>document.getElementById('btn-drive-fwd'),
+        <HTMLButtonElement>document.getElementById('btn-drive-rev'),
+        <HTMLButtonElement>document.getElementById('btn-drive-left'),
+        <HTMLButtonElement>document.getElementById('btn-drive-right'),
+    ],
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const driving_controls = new DrivingControls({
+    ros: ros,
+    fwd_button: <HTMLButtonElement>document.getElementById('btn-drive-fwd'),
+    rev_button: <HTMLButtonElement>document.getElementById('btn-drive-rev'),
+    left_button: <HTMLButtonElement>document.getElementById('btn-drive-left'),
+    right_button: <HTMLButtonElement>document.getElementById('btn-drive-right'),
+    speed_select: <HTMLSelectElement>document.getElementById('select-speed'),
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const control = new Control({
+    ros: ros,
+    robot: robot,
+    map: map,
+    status: status,
+    go_button: <HTMLButtonElement>document.getElementById('btn-go'),
+    stop_button: <HTMLButtonElement>document.getElementById('btn-stop'),
+    destination_selector: <HTMLSelectElement>document.getElementById('select-destination'),
+    status_alert: document.getElementById('connection-alert')
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const locations = new Locations({
+    ros: ros,
+    robot: robot,
+    editor_modal: jQuery('#editLocationsModal'),
+    editor_table: document.getElementById('locations-table'),
+    destination_selector: <HTMLSelectElement>document.getElementById("select-destination"),
+    add_button: <HTMLButtonElement>document.getElementById("btn-location-add"),
+    add_name: <HTMLInputElement>document.getElementById('input-location-name'),
+    save_button: <HTMLButtonElement>document.getElementById('btn-location-editor-save'),
+    open_button: <HTMLButtonElement>document.getElementById('btn-edit-locations'),
+    status_alert: document.getElementById('connection-alert'),
+    edit_alert: document.getElementById('edit-alert'),
+    edit_alert_row: document.getElementById('edit-alert-row')
+});
+
+
+// Resize all the canvases
+function resize_canvas(): void {
+    for (const layer of layers) {
+        resize_to_window(layer.canvas);
+    }
+    map.compute_scale_factor();
+    for (const layer of layers) {
+        layer.redraw();
+    }
+}
+
+// Setup
+window.addEventListener('resize', resize_canvas, false);
+resize_canvas();

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Automower2 control panel</title>
+</head>
+<body>
+<div class="container-fluid" id="header">
+    <div class="row">
+        <div class="col">
+            <h2>Automower 2 control</h2>
+        </div>
+        <div class="col">
+            <p>
+                Status status: <span id="system-status">Fetching...</span>
+            </p>
+        </div>
+        <div class="col">
+            <p>Battery status: <span id="battery-status">Fetching...</span></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div class="col">
+                    <div class="input-group flex-nowrap">
+                        <div class="input-group-prepend">
+                                <span class="input-group-text"
+                                      id="addon-destination">Destination</span>
+                        </div>
+                        <select id="select-destination" class="form-control" name="destination"
+                                aria-label="Destination" aria-describedby="addon-destination">
+                            <!-- See handlebar template locations-selector.handlebars -->
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <button type="button" id="btn-go" class="btn btn-success" title="Go to location" disabled>Go
+                    </button>
+                    <button type="button" id="btn-stop" class="btn btn-danger">Stop</button>
+                    <button type="button" id="btn-edit-locations" class="btn btn-secondary" data-toggle="modal"
+                            data-target="#editLocationsModal">Edit locations
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid my-3" id="main">
+    <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="map" style="z-index: 1;" width="800" height="600" class="rounded">
+            Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
+        </canvas>
+        <canvas id="robot" style="z-index: 2;" width="800" height="600">
+            Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
+        </canvas>
+        <canvas id="people" style="z-index: 3;" width="800" height="600">
+            Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
+        </canvas>
+        <div id="status-alert" style="z-index: 10"
+             class="alert alert-info floating-alert fade show semi-transparent d-none" role="alert">
+            Some status or other
+        </div>
+        <div id="connection-alert" style="z-index: 10" class="alert alert-info floating-alert" role="alert">
+            Connecting to robot controller...
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editLocationsModal" tabindex="-1" role="dialog" aria-labelledby="editLocationsModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLocationsModalLabel">Edit locations</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body px-0">
+                <div class="container-fluid child-px3">
+                    <div class="row pb-3 border-bottom">
+                        <div class="col div-center">
+                            <em>Hold down buttons to drive</em>
+                        </div>
+                        <div class="col-">
+                            <table class="table table-borderless table-sm">
+                                <thead>
+                                <tr>
+                                    <th scope="colgroup" colspan="3">Driving controls</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <button type="button" id="btn-drive-fwd" class="btn btn-secondary"
+                                                title="Drive forward">
+                                            <span class="oi oi-arrow-thick-top"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button type="button" id="btn-drive-left" class="btn btn-secondary"
+                                                title="Rotate left">
+                                            <span class="oi oi-arrow-thick-left"></span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" id="btn-drive-rev" class="btn btn-secondary"
+                                                title="Reverse">
+                                            <span class="oi oi-arrow-thick-bottom"></span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" id="btn-drive-right" class="btn btn-secondary"
+                                                title="Rotate right">
+                                            <span class="oi oi-arrow-thick-right"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col div-center">
+                            <select id="select-speed" name="select-speed" class="form-control">
+                                <option value="[0.1,0.3]">Slow</option>
+                                <option value="[0.3,0.7]" selected="selected">Medium</option>
+                                <option value="[0.7,1.0]">Fast</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row border-bottom py-2" id="locations">
+                        <table class="table table-borderless table-hover w-100 mb-0">
+                            <tbody id="locations-table">
+                            <!-- See handlebar template locations-editor.handlebars -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col">
+                            <div class="input-group flex-nowrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="addon-name">Name</span>
+                                </div>
+                                <input id="input-location-name" class="form-control" name="name"
+                                       aria-label="Name" aria-describedby="addon-name"
+                                       placeholder="Name for current location"
+                                       required/>
+                            </div>
+                        </div>
+                        <div class="col-">
+                            <button type="button" class="btn btn-secondary" id="btn-location-add">
+                                Add current location
+                            </button>
+                        </div>
+                    </div>
+                    <div id="edit-alert-row" class="row pt-3 d-none">
+                        <div class="col">
+                            <div id="edit-alert" class="alert alert-danger" role="alert">
+                                Some alert here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="btn-location-editor-save">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="bundle.js"></script>
+</body>
+</html>

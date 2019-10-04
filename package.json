@@ -1,0 +1,49 @@
+{
+  "name": "automower2_site",
+  "version": "1.0.0",
+  "description": "Web site for ORU IPW robot",
+  "private": true,
+  "sideEffects": [
+    "./src/index.ts",
+    "*.scss"
+  ],
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "handlebars": "^4.4.5",
+    "jquery": "^3.4.1",
+    "mathjs": "^6.2.3",
+    "open-iconic": "^1.1.1",
+    "popper.js": "^1.16.0",
+    "roslib": "file:lib/roslibjs"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "^4.3.1",
+    "@types/jquery": "^3.3.31",
+    "@types/mathjs": "^6.0.2",
+    "@types/node": "^12.11.7",
+    "@types/roslib": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.5.0",
+    "@typescript-eslint/parser": "^2.5.0",
+    "css-loader": "^3.2.0",
+    "eslint": "^6.5.1",
+    "file-loader": "^4.2.0",
+    "fork-ts-checker-webpack-plugin": "^2.0.0",
+    "handlebars-loader": "^1.7.1",
+    "node-sass": "^4.13.0",
+    "sass": "^1.23.1",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.6.4",
+    "url-loader": "^2.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "deploy": "npm run build && rosrun oru_ipw_utils sync-to-ipw-robot",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Arvid Norlander",
+  "license": "GPL-3.0"
+}

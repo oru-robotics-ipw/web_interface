@@ -1,0 +1,8 @@
+*.log
+/dist/*.eot
+/dist/*.js
+/dist/*.js.map
+/dist/*.svg
+/dist/*.ttf
+/dist/*.woff
+/node_modules/
