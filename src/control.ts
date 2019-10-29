@@ -278,6 +278,7 @@ export class Control {
         });
 
         this.current_goal.send();
+        this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_LONG_BEEP}));
 
     }
 
