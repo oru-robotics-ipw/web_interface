@@ -18,6 +18,7 @@
 
 import {Ros, Topic} from "roslib";
 import {Layer} from "./layer";
+import {Pose} from "./ros_types/geometry_msgs";
 import * as map_web_republisher from "./ros_types/map_web_republisher";
 import * as nav_msgs from "./ros_types/nav_msgs";
 import {Point2D} from "./types";
@@ -57,7 +58,7 @@ export class MapLayer extends Layer {
         this.map_metadata = new nav_msgs.MapMetaData({
             resolution: 1.0,
             width: 1.0,
-            height: 1.0,
+            height: 1.0
         });
 
         // Set up event handlers
@@ -66,11 +67,13 @@ export class MapLayer extends Layer {
             this.compute_scale_factor();
             this.redraw();
             console.log("Map image loaded");
+            this.dispatchEvent(new Event('map_image_loaded'));
         };
         this.map_metadata_listener.subscribe((message: map_web_republisher.MapStatus) => {
             this.map_metadata = message.info;
             console.log("Map metadata received");
             this.image.src = this.url + `?s=${message.header.stamp.secs}&ns=${message.header.stamp.nsecs}`;
+            this.dispatchEvent(new Event('map_metadata_changed'));
         });
     }
 
@@ -160,5 +163,12 @@ export class MapLayer extends Layer {
      */
     image2world(coord: Point2D): Point2D {
         return this.map2world(this.image2map(coord));
+    }
+
+    /**
+     * Checks if map metadata has been loaded so that coordinate conversion will work.
+     */
+    is_ready(): boolean {
+        return 'origin' in this.map_metadata;
     }
 }

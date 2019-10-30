@@ -34,7 +34,7 @@ interface Location extends Pose2D {
 /**
  * Handle locations: loading, saving and editing.
  */
-export class Locations {
+export class Locations extends EventTarget {
     public locations_saved: Map<string, Location>;
     private readonly ros: Ros;
     private readonly robot: Robot;
@@ -66,6 +66,7 @@ export class Locations {
         edit_alert: HTMLElement;
         edit_alert_row: HTMLElement;
     }) {
+        super();
         this.ros = props.ros;
         this.robot = props.robot;
         this.editor_table = props.editor_table;
@@ -133,6 +134,7 @@ export class Locations {
                 this.locations_saved.set(entry.name, entry);
             }
             this.update_locations_selection();
+            this.dispatchEvent(new Event('locations_changed'));
         });
     }
 
@@ -162,6 +164,7 @@ export class Locations {
                 }
             });
         }
+        this.dispatchEvent(new Event('locations_changed'));
     }
 
     /**
@@ -255,7 +258,7 @@ export class LocationsLayer extends Layer {
         });
         this.canvas.addEventListener('mousemove', ev => {
             // HACK WARNING: This depends on our canvas being the top one in the stack. Otherwise we won't get events.
-            if (this.enabled) {
+            if (this.enabled && this.map.is_ready()) {
                 const image_coord = {x: ev.offsetX, y: ev.offsetY};
                 const world_coord = this.map.image2world(image_coord);
                 let best = null;
@@ -279,12 +282,18 @@ export class LocationsLayer extends Layer {
                 set_classes(props.tooltip, found ? [] : ['d-none'], ['d-none']);
             }
         });
-        this.redraw();
+
+        this.locations.addEventListener('locations_changed', () => {
+            this.redraw();
+        });
+        this.map.addEventListener('map_metadata_changed', () => {
+            this.redraw();
+        });
     }
 
     redraw(): void {
         super.redraw();
-        if (this.enabled) {
+        if (this.enabled && this.map.is_ready()) {
             for (const e of this.locations.locations_saved.values()) {
                 this.draw_circle(this.map.world2image(e), "brown");
             }

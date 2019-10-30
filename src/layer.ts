@@ -22,7 +22,7 @@ import {Point2D, Pose2D} from "./types";
 /**
  * Base class handling a canvas layer
  */
-export class Layer {
+export class Layer extends EventTarget {
     public readonly canvas: HTMLCanvasElement;
     protected readonly ctx: CanvasRenderingContext2D;
     protected readonly ros: Ros;
@@ -33,6 +33,7 @@ export class Layer {
      * @param ros Ros connection
      */
     constructor(canvas: HTMLCanvasElement, ros: Ros) {
+        super();
         this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.ros = ros;
