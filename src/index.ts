@@ -42,7 +42,9 @@ function resize_to_window(element: HTMLCanvasElement): void {
 // -----------------
 
 const ros = new Ros({
-    url: 'wss://automower2:9090',
+    url: origin.replace(/https?:\/\/([^\/]+)/, (match, p1) => {
+        return `wss://${p1}:9090`;
+    }),
     groovyCompatibility: false,
 });
 
