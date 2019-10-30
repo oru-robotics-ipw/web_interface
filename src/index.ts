@@ -153,4 +153,5 @@ function resize_canvas(): void {
 
 // Setup
 window.addEventListener('resize', resize_canvas, false);
+window.addEventListener('orientationchange', resize_canvas, false);
 resize_canvas();

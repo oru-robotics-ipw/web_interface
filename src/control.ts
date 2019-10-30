@@ -49,7 +49,8 @@ class DrivingButton {
         button: HTMLButtonElement;
     }) {
         this.timer = null;
-        props.button.addEventListener('mousedown', () => {
+
+        const start = (): void => {
             if (this.timer !== null) {
                 console.warn("Timer already running");
                 return;
@@ -61,7 +62,7 @@ class DrivingButton {
                         props.parent.angular * props.angular);
                 },
                 100);
-        });
+        };
 
         const stop = (): void => {
             if (this.timer === null) {
@@ -72,11 +73,24 @@ class DrivingButton {
             this.timer = null;
         };
 
+        props.button.addEventListener('mousedown', () => {
+            start();
+        });
+        props.button.addEventListener('touchstart', () => {
+            start();
+        });
+
         props.button.addEventListener('mouseup', () => {
             stop();
         });
 
         props.button.addEventListener('mouseleave', () => {
+            stop();
+        });
+        props.button.addEventListener('touchleave', () => {
+            stop();
+        });
+        props.button.addEventListener('touchcancel', () => {
             stop();
         });
     }
