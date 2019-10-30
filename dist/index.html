@@ -5,6 +5,9 @@
     <title>Automower2 control panel</title>
 </head>
 <body>
+
+<div id="mouse-tooltip" class="d-none">Placeholder tooltip</div>
+
 <div class="container-fluid" id="header">
     <div class="row">
         <div class="col">
@@ -43,6 +46,10 @@
                             data-target="#editLocationsModal">Edit locations
                     </button>
                 </div>
+                <div class="col form-check">
+                    <input type="checkbox" id="check-show-locations" class="form-check-input"/>
+                    <label class="form-check-label" for="check-show-locations">Show location markers</label>
+                </div>
             </div>
         </div>
         <div class="col">
@@ -59,6 +66,9 @@
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
         <canvas id="people" style="z-index: 3;" width="800" height="600">
+            Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
+        </canvas>
+        <canvas id="locations_canvas" style="z-index: 4;" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
         <div id="status-alert" style="z-index: 10"

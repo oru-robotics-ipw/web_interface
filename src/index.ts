@@ -21,8 +21,8 @@ import 'bootstrap';
 import jQuery from 'jquery';
 import {Ros, TFClient} from 'roslib';
 import {Control, DrivingControls} from "./control";
-import {Locations} from "./locations";
-import {Map} from "./map";
+import {Locations, LocationsLayer} from "./locations";
+import {MapLayer} from "./map_layer";
 import {People} from "./people";
 import {Robot} from "./robot";
 import './style.scss';
@@ -74,11 +74,9 @@ const tf_client = new TFClient({
 
 
 // Objects handling the canvas layers
-const map = new Map(<HTMLCanvasElement>document.getElementById('map'), ros, 'maps/map.png');
+const map = new MapLayer(<HTMLCanvasElement>document.getElementById('map'), ros, 'maps/map.png');
 const robot = new Robot(<HTMLCanvasElement>document.getElementById('robot'), ros, map, tf_client);
 const people = new People(<HTMLCanvasElement>document.getElementById('people'), ros, map, tf_client);
-
-const layers = [map, robot, people];
 
 const status = new SystemStatus({
     ros: ros,
@@ -115,7 +113,6 @@ const control = new Control({
     status_alert: document.getElementById('connection-alert')
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const locations = new Locations({
     ros: ros,
     robot: robot,
@@ -130,7 +127,16 @@ const locations = new Locations({
     edit_alert: document.getElementById('edit-alert'),
     edit_alert_row: document.getElementById('edit-alert-row')
 });
+const locationsLayer = new LocationsLayer({
+    canvas: <HTMLCanvasElement>document.getElementById('locations_canvas'),
+    checkbox: <HTMLInputElement>document.getElementById('check-show-locations'),
+    tooltip: <HTMLDivElement>document.getElementById('mouse-tooltip'),
+    ros: ros,
+    locations: locations,
+    map: map
+});
 
+const layers = [map, robot, people, locationsLayer];
 
 // Resize all the canvases
 function resize_canvas(): void {

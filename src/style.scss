@@ -66,3 +66,12 @@ $icon-font-path: '~open-iconic/font/fonts/';
   justify-content: center;
   align-items: center;
 }
+
+#mouse-tooltip {
+  @extend .tooltip-inner;
+  display: block;
+  position: fixed;
+  overflow: hidden;
+  z-index: 100;
+  pointer-events:none;
+}

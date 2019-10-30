@@ -19,7 +19,7 @@
 import {identity, Matrix, multiply} from 'mathjs';
 import {Ros, TFClient, Topic} from "roslib";
 import {Layer} from "./layer";
-import {Map} from "./map";
+import {MapLayer} from "./map_layer";
 import * as spencer_tracking_msgs from "./ros_types/spencer_tracking_msgs";
 import {Pose2D} from "./types";
 import {get_yaw, matrix_to_pose, pose_to_matrix} from "./utils";
@@ -28,7 +28,7 @@ import {get_yaw, matrix_to_pose, pose_to_matrix} from "./utils";
  * Layer for drawing observed people
  */
 export class People extends Layer {
-    private readonly map: Map;
+    private readonly map: MapLayer;
     private readonly people_listener: Topic;
     private readonly tf_client: TFClient;
 
@@ -43,7 +43,7 @@ export class People extends Layer {
      * @param map        Map layer
      * @param tf_client  TF client to use for transformations
      */
-    constructor(canvas: HTMLCanvasElement, ros: Ros, map: Map, tf_client: TFClient) {
+    constructor(canvas: HTMLCanvasElement, ros: Ros, map: MapLayer, tf_client: TFClient) {
         super(canvas, ros);
         this.map = map;
         this.tf_client = tf_client;

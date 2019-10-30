@@ -17,7 +17,7 @@
  */
 
 import {ActionClient, Goal, Ros, Service, ServiceRequest, Topic} from "roslib";
-import {Map} from "./map";
+import {MapLayer} from "./map_layer";
 import {Robot} from "./robot";
 import {Mode} from "./ros_types/am_driver";
 import {Twist} from "./ros_types/geometry_msgs";
@@ -170,7 +170,7 @@ export class DrivingControls {
 export class Control {
     private readonly ros: Ros;
     private readonly robot: Robot;
-    private readonly map: Map;
+    private readonly map: MapLayer;
     private readonly status: SystemStatus;
     private readonly destination_selector: HTMLSelectElement;
     private readonly status_alert: HTMLElement;
@@ -188,7 +188,7 @@ export class Control {
         destination_selector: HTMLSelectElement;
         ros: Ros;
         stop_button: HTMLButtonElement;
-        map: Map;
+        map: MapLayer;
         status: SystemStatus;
         status_alert: HTMLElement;
     }) {

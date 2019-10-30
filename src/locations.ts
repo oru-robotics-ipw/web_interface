@@ -17,21 +17,25 @@
  */
 
 import {Param, Ros, Service, ServiceRequest} from "roslib";
+import {Layer} from "./layer";
+import {MapLayer} from "./map_layer";
 import {Robot} from "./robot";
 import template_editor from './templates/location-editor.handlebars';
 import template_selector from './templates/location-selector.handlebars';
 import {Pose2D} from "./types";
-import {set_classes, timed_alert} from "./utils";
+import {distance_l2, set_classes, timed_alert} from "./utils";
 
 interface Location extends Pose2D {
     id: number;
     name: string;
 }
 
+
 /**
  * Handle locations: loading, saving and editing.
  */
 export class Locations {
+    public locations_saved: Map<string, Location>;
     private readonly ros: Ros;
     private readonly robot: Robot;
     private readonly editor_table: HTMLElement;
@@ -41,8 +45,6 @@ export class Locations {
     private readonly status_alert: HTMLElement;
     private readonly edit_alert: HTMLElement;
     private readonly edit_alert_row: HTMLElement;
-
-    private locations_saved: Map<string, Location>;
     private locations_editor: Map<string, Location>;
     private id_counter: number;
 
@@ -224,5 +226,68 @@ export class Locations {
             combined_html += html;
         });
         this.destination_selector.innerHTML = combined_html;
+    }
+}
+
+/**
+ * Visualisation layer for locations
+ */
+export class LocationsLayer extends Layer {
+    public enabled: boolean;
+    private locations: Locations;
+    private map: MapLayer;
+
+    constructor(props: {
+        canvas: HTMLCanvasElement;
+        ros: Ros;
+        checkbox: HTMLInputElement;
+        tooltip: HTMLDivElement;
+        locations: Locations;
+        map: MapLayer;
+    }) {
+        super(props.canvas, props.ros);
+        this.locations = props.locations;
+        this.map = props.map;
+        this.enabled = props.checkbox.checked;
+        props.checkbox.addEventListener('change', () => {
+            this.enabled = props.checkbox.checked;
+            this.redraw();
+        });
+        this.canvas.addEventListener('mousemove', ev => {
+            // HACK WARNING: This depends on our canvas being the top one in the stack. Otherwise we won't get events.
+            if (this.enabled) {
+                const image_coord = {x: ev.offsetX, y: ev.offsetY};
+                const world_coord = this.map.image2world(image_coord);
+                let best = null;
+                let best_distance = 1e30;
+                for (const point of this.locations.locations_saved.values()) {
+                    const dist = distance_l2(world_coord, point);
+                    if (dist < best_distance)
+                    {
+                        best_distance = dist;
+                        best = point;
+                    }
+                }
+                // Only display tooltip if we found a match and it is reasonably close.
+                const found = best !== null && best_distance < 2.5;
+                if (found)
+                {
+                    props.tooltip.textContent = best.name;
+                    props.tooltip.style.top = ev.clientY + 'px';
+                    props.tooltip.style.left = ev.clientX + 'px';
+                }
+                set_classes(props.tooltip, found ? [] : ['d-none'], ['d-none']);
+            }
+        });
+        this.redraw();
+    }
+
+    redraw(): void {
+        super.redraw();
+        if (this.enabled) {
+            for (const e of this.locations.locations_saved.values()) {
+                this.draw_circle(this.map.world2image(e), "brown");
+            }
+        }
     }
 }

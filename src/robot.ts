@@ -18,7 +18,7 @@
 
 import {Ros, TFClient, Transform} from "roslib";
 import {Layer} from "./layer";
-import {Map} from "./map";
+import {MapLayer} from "./map_layer";
 import {Pose2D} from "./types";
 import {get_yaw} from "./utils";
 
@@ -26,7 +26,7 @@ import {get_yaw} from "./utils";
  * Handles drawing the robot canvas
  */
 export class Robot extends Layer {
-    private readonly map: Map;
+    private readonly map: MapLayer;
     private readonly tf_client: TFClient;
     private robot_transform: Transform;
 
@@ -38,7 +38,7 @@ export class Robot extends Layer {
      * @param map        Map layer
      * @param tf_client  TF manager
      */
-    constructor(canvas: HTMLCanvasElement, ros: Ros, map: Map, tf_client: TFClient) {
+    constructor(canvas: HTMLCanvasElement, ros: Ros, map: MapLayer, tf_client: TFClient) {
         super(canvas, ros);
         this.map = map;
         this.robot_transform = undefined;

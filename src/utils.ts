@@ -19,7 +19,7 @@
 import {Matrix, matrix} from "mathjs";
 import {Ros} from "roslib";
 import {TypeDef} from "./ros_types/rosapi";
-import {Pose2D, Quaternion} from "./types";
+import {Point2D, Pose2D, Quaternion} from "./types";
 
 /**
  * Get the theta (yaw) from a ROS quaternion
@@ -46,6 +46,18 @@ export function get_yaw(q: Quaternion): number {
         yaw = Math.atan2(2 * (q.x * q.y + q.w * q.z), sqw + sqx - sqy - sqz);
     }
     return yaw;
+}
+
+/**
+ * Euclidean distance between points.
+ *
+ * @param a A point
+ * @param b Another point
+ */
+export function distance_l2(a: Point2D, b: Point2D): number {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 /**

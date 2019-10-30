@@ -25,7 +25,7 @@ import {Point2D} from "./types";
 /**
  * Handles the map canvas layer and computing general scaling factors
  */
-export class Map extends Layer {
+export class MapLayer extends Layer {
     private readonly background_colour: string;
     private readonly url: string;
     private readonly image: HTMLImageElement;
