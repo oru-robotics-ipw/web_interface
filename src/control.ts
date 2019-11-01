@@ -20,162 +20,11 @@ import {ActionClient, Goal, Ros, Service, ServiceRequest, Topic} from "roslib";
 import {MapLayer} from "./map_layer";
 import {Robot} from "./robot";
 import {Mode} from "./ros_types/am_driver";
-import {Twist} from "./ros_types/geometry_msgs";
 import * as move_base_msgs from "./ros_types/move_base_msgs";
 import {UInt16} from "./ros_types/std_msgs";
 import * as std_srvs from "./ros_types/std_srvs";
 import {SystemStatus} from "./system_status";
 import {timed_alert, yaw_to_quaternion} from "./utils";
-
-/**
- * Handles the logic of an individual button
- */
-class DrivingButton {
-    private timer: number | null;
-
-    /**
-     * Constructor
-     *
-     * @param props
-     *   * angular: Multiplicative factor for angular component. Multiplied with base speed.
-     *   * linear: Multiplicative factor for linear component. Multiplied with base speed.
-     *   * parent: Parent object
-     *   * button: Button to add event listeners to.
-     */
-    constructor(props: {
-        angular: number;
-        linear: number;
-        parent: DrivingControls;
-        button: HTMLButtonElement;
-    }) {
-        this.timer = null;
-
-        const start = (): void => {
-            if (this.timer !== null) {
-                console.warn("Timer already running");
-                return;
-            }
-            this.timer = window.setInterval(
-                () => {
-                    props.parent.send_twist(
-                        props.parent.linear * props.linear,
-                        props.parent.angular * props.angular);
-                },
-                100);
-        };
-
-        const stop = (): void => {
-            if (this.timer === null) {
-                return;
-            }
-            props.parent.send_twist(0, 0);
-            window.clearInterval(this.timer);
-            this.timer = null;
-        };
-
-        props.button.addEventListener('mousedown', () => {
-            start();
-        });
-        props.button.addEventListener('touchstart', () => {
-            start();
-        });
-
-        props.button.addEventListener('mouseup', () => {
-            stop();
-        });
-
-        props.button.addEventListener('mouseleave', () => {
-            stop();
-        });
-        props.button.addEventListener('touchleave', () => {
-            stop();
-        });
-        props.button.addEventListener('touchcancel', () => {
-            stop();
-        });
-    }
-}
-
-/**
- * Handles the driving controls
- */
-export class DrivingControls {
-    // Current speeds
-    public linear: number;
-    public angular: number;
-
-    private readonly ros: Ros;
-    private readonly fwd_button: DrivingButton;
-    private readonly rev_button: DrivingButton;
-    private readonly left_button: DrivingButton;
-    private readonly right_button: DrivingButton;
-    private readonly speed_select: HTMLSelectElement;
-    private readonly cmd_vel: Topic;
-
-    constructor(options: {
-        ros: Ros;
-        fwd_button: HTMLButtonElement;
-        rev_button: HTMLButtonElement;
-        left_button: HTMLButtonElement;
-        right_button: HTMLButtonElement;
-        speed_select: HTMLSelectElement;
-    }) {
-        this.ros = options.ros;
-        this.fwd_button = new DrivingButton({parent: this, button: options.fwd_button, linear: 1, angular: 0});
-        this.rev_button = new DrivingButton({parent: this, button: options.rev_button, linear: -1, angular: 0});
-        this.left_button = new DrivingButton({parent: this, button: options.left_button, linear: 0, angular: 1});
-        this.right_button = new DrivingButton({parent: this, button: options.right_button, linear: 0, angular: -1});
-        this.speed_select = options.speed_select;
-
-        this.cmd_vel = new Topic({
-            ros: this.ros,
-            name: '/cmd_vel',
-            messageType: 'geometry_msgs/Twist'
-        });
-
-        this.speed_select.addEventListener('input', () => {
-            this.update_speeds();
-        });
-
-        this.update_speeds();
-    }
-
-    setup_drive_button(button: HTMLButtonElement, linear: number, angular: number): void {
-        button.addEventListener('mousedown', () => {
-            this.send_twist(linear, angular);
-        });
-        button.addEventListener('mouseup', () => {
-            this.send_twist(0, 0);
-        });
-    }
-
-    /**
-     * Send a twist command for 2D
-     *
-     * @param linear   Linear speed to set   [m/s]
-     * @param angular  Angular speed to set  [rad/s]
-     */
-    public send_twist(linear: number, angular: number): void {
-        const msg = new Twist({
-            linear: {
-                x: linear,
-                y: 0,
-                z: 0
-            },
-            angular: {
-                x: 0,
-                y: 0,
-                z: angular
-            }
-        });
-        this.cmd_vel.publish(msg);
-    }
-
-    private update_speeds(): void {
-        [this.linear, this.angular] = JSON.parse(this.speed_select.value);
-    }
-
-}
 
 
 /**
@@ -187,6 +36,7 @@ export class Control {
     private readonly map: MapLayer;
     private readonly status: SystemStatus;
     private readonly destination_selector: HTMLSelectElement;
+    private readonly sound_checkbox: HTMLInputElement;
     private readonly status_alert: HTMLElement;
 
     private readonly move_base_client: ActionClient;
@@ -199,6 +49,7 @@ export class Control {
     constructor(options: {
         robot: Robot;
         go_button: HTMLButtonElement;
+        sound_checkbox: HTMLInputElement;
         destination_selector: HTMLSelectElement;
         ros: Ros;
         stop_button: HTMLButtonElement;
@@ -212,6 +63,7 @@ export class Control {
         this.status = options.status;
         this.destination_selector = options.destination_selector;
         this.status_alert = options.status_alert;
+        this.sound_checkbox = options.sound_checkbox;
 
         this.move_base_client = new ActionClient({
             ros: this.ros,
@@ -247,7 +99,12 @@ export class Control {
         });
     }
 
-    on_go(): void {
+    /**
+     * Go to selected destination.
+     *
+     * This is public since it is also triggered when double clicking in the locations layer.
+     */
+    public on_go(): void {
         const coord_str = this.destination_selector.value;
         const coords = JSON.parse(coord_str);
         console.log("Go to:", coords);
@@ -285,18 +142,22 @@ export class Control {
             // Indicate we have finished navigation via a sound.
             // TODO: We don't know if we failed or succeeded.
             // TODO: Move this to another node, this relies on the web page being open
-            this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_DOUBLE_BEEP}));
+            if (this.sound_checkbox.checked) {
+                this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_DOUBLE_BEEP}));
+            }
             // Also indicate with a popup, again we don't know if it was successful or not.
             timed_alert(this.status_alert, "Navigation ended", "alert-info", 5000);
             this.remove_goal();
         });
 
         this.current_goal.send();
-        this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_LONG_BEEP}));
+        if (this.sound_checkbox.checked) {
+            this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_LONG_BEEP}));
+        }
 
     }
 
-    on_stop(): void {
+    private on_stop(): void {
         console.log("Stop command issued!");
         if (this.current_goal) {
             this.current_goal.cancel();
@@ -304,7 +165,7 @@ export class Control {
         }
     }
 
-    remove_goal(): void {
+    private remove_goal(): void {
         this.current_goal = undefined;
         this.robot.target_location = undefined;
     }

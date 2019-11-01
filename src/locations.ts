@@ -125,7 +125,7 @@ export class Locations extends EventTarget {
     /**
      * Load location list from ROS parameters
      */
-    load_from_parameters(): void {
+    private load_from_parameters(): void {
         this.next_id_param.get(value => {
             this.id_counter = value;
         });
@@ -141,7 +141,7 @@ export class Locations extends EventTarget {
     /**
      * Save location list to ROS parameters
      */
-    save_to_parameters(): void {
+    private save_to_parameters(): void {
         this.next_id_param.set(this.id_counter);
         const as_array: Location[] = [];
         this.locations_saved.forEach(v => {
@@ -170,7 +170,7 @@ export class Locations extends EventTarget {
     /**
      * Called to handle addition of location in editor
      */
-    on_add_location(): void {
+    private on_add_location(): void {
         const new_name = this.add_name.value;
         if (!new_name) {
             set_classes(this.edit_alert_row, [], ['d-none']);
@@ -195,13 +195,13 @@ export class Locations extends EventTarget {
      *
      * @param location_name Name of location to remove
      */
-    on_remove_location(location_name: string): void {
+    private on_remove_location(location_name: string): void {
         this.locations_editor.delete(location_name);
         this.update_locations_editor();
     }
 
     // Update locations in the editor
-    update_locations_editor(): void {
+    private update_locations_editor(): void {
 
         let combined_html = "";
 
@@ -220,7 +220,7 @@ export class Locations extends EventTarget {
     }
 
     // Update locations in selection box
-    update_locations_selection(): void {
+    private update_locations_selection(): void {
         let combined_html = "";
 
         this.locations_saved.forEach(v => {
@@ -237,8 +237,10 @@ export class Locations extends EventTarget {
  */
 export class LocationsLayer extends Layer {
     public enabled: boolean;
-    private locations: Locations;
-    private map: MapLayer;
+
+    private readonly locations: Locations;
+    private readonly map: MapLayer;
+    private readonly destination_selector: HTMLSelectElement;
 
     constructor(props: {
         canvas: HTMLCanvasElement;
@@ -251,6 +253,7 @@ export class LocationsLayer extends Layer {
     }) {
         super(props.canvas, props.ros);
         this.locations = props.locations;
+        this.destination_selector = props.destination_selector;
         this.map = props.map;
         this.enabled = props.checkbox.checked;
         props.checkbox.addEventListener('change', () => {
@@ -274,12 +277,13 @@ export class LocationsLayer extends Layer {
         });
         // Make clicking on the map select in destination selector.
         this.canvas.addEventListener('click', ev => {
-            if (this.enabled && this.map.is_ready()) {
-                const image_coord = {x: ev.offsetX, y: ev.offsetY};
-                const location = this.find_closest_location(image_coord);
-                if (location !== null) {
-                    props.destination_selector.value = JSON.stringify(location);
-                }
+            this.update_destination(ev);
+        });
+        // Make clicking on the map select in destination selector.
+        this.canvas.addEventListener('dblclick', ev => {
+            const was_updated = this.update_destination(ev);
+            if (was_updated) {
+                this.dispatchEvent(new Event('start_navigation'));
             }
         });
 
@@ -291,11 +295,36 @@ export class LocationsLayer extends Layer {
         });
     }
 
+    redraw(): void {
+        super.redraw();
+        if (this.enabled && this.map.is_ready()) {
+            for (const e of this.locations.locations_saved.values()) {
+                this.draw_pose({theta: e.theta, ...this.map.world2image(e)}, "brown");
+            }
+        }
+    }
+
+    /**
+     * Update destination based on mouse click
+     * @param ev
+     */
+    private update_destination(ev: MouseEvent): boolean {
+        if (this.enabled && this.map.is_ready()) {
+            const image_coord = {x: ev.offsetX, y: ev.offsetY};
+            const location = this.find_closest_location(image_coord);
+            if (location !== null) {
+                this.destination_selector.value = JSON.stringify(location);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Find the closest stored location to an image coordinate.
      * @param image_coord
      */
-    find_closest_location(image_coord: Point2D): Location | null {
+    private find_closest_location(image_coord: Point2D): Location | null {
         const world_coord = this.map.image2world(image_coord);
         let best = null;
         let best_distance = 1e30;
@@ -311,14 +340,5 @@ export class LocationsLayer extends Layer {
             return best;
         }
         return null;
-    }
-
-    redraw(): void {
-        super.redraw();
-        if (this.enabled && this.map.is_ready()) {
-            for (const e of this.locations.locations_saved.values()) {
-                this.draw_circle(this.map.world2image(e), "brown");
-            }
-        }
     }
 }

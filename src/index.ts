@@ -20,7 +20,9 @@ import 'bootstrap';
 
 import jQuery from 'jquery';
 import {Ros, TFClient} from 'roslib';
-import {Control, DrivingControls} from "./control";
+import {Control} from "./control";
+import {DrivingControls} from "./driving_controls";
+import {Estop} from "./estop";
 import {Locations, LocationsLayer} from "./locations";
 import {MapLayer} from "./map_layer";
 import {People} from "./people";
@@ -74,6 +76,11 @@ const tf_client = new TFClient({
     transThres: 0.01
 });
 
+const estop = new Estop({
+    ros: ros,
+    estop_button: <HTMLButtonElement>document.getElementById('btn-estop'),
+    reset_button: <HTMLButtonElement>document.getElementById('btn-reset-estop'),
+});
 
 // Objects handling the canvas layers
 const map = new MapLayer(<HTMLCanvasElement>document.getElementById('map'), ros, 'maps/map.png');
@@ -92,6 +99,7 @@ const status = new SystemStatus({
         <HTMLButtonElement>document.getElementById('btn-drive-right'),
     ],
 });
+estop.addEventListener('estop', (ev: CustomEvent<{ status: boolean }>) => status.on_soft_estop(ev));
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const driving_controls = new DrivingControls({
@@ -103,7 +111,6 @@ const driving_controls = new DrivingControls({
     speed_select: <HTMLSelectElement>document.getElementById('select-speed'),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const control = new Control({
     ros: ros,
     robot: robot,
@@ -112,7 +119,8 @@ const control = new Control({
     go_button: <HTMLButtonElement>document.getElementById('btn-go'),
     stop_button: <HTMLButtonElement>document.getElementById('btn-stop'),
     destination_selector: <HTMLSelectElement>document.getElementById('select-destination'),
-    status_alert: document.getElementById('connection-alert')
+    status_alert: document.getElementById('connection-alert'),
+    sound_checkbox: <HTMLInputElement>document.getElementById('check-enable-sound'),
 });
 
 const locations = new Locations({
@@ -127,7 +135,7 @@ const locations = new Locations({
     open_button: <HTMLButtonElement>document.getElementById('btn-edit-locations'),
     status_alert: document.getElementById('connection-alert'),
     edit_alert: document.getElementById('edit-alert'),
-    edit_alert_row: document.getElementById('edit-alert-row')
+    edit_alert_row: document.getElementById('edit-alert-row'),
 });
 const locationsLayer = new LocationsLayer({
     canvas: <HTMLCanvasElement>document.getElementById('locations_canvas'),
@@ -138,6 +146,10 @@ const locationsLayer = new LocationsLayer({
     locations: locations,
     map: map
 });
+locationsLayer.addEventListener('start_navigation', () => {
+   control.on_go();
+});
+
 
 const layers = [map, robot, people, locationsLayer];
 

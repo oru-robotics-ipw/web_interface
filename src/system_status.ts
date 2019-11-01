@@ -44,6 +44,7 @@ export class SystemStatus {
     public is_in_charging_station: boolean;
     public is_in_collision: boolean;
     public is_stopped: boolean;
+    public is_soft_estop: boolean;
 
     private readonly ros: Ros;
     private readonly battery_status_sub: Topic;
@@ -70,6 +71,7 @@ export class SystemStatus {
         this.is_in_charging_station = false;
         this.is_in_collision = false;
         this.is_stopped = false;
+        this.is_soft_estop = false;
         this.sensor_constants = {};
 
         for (const entry of options.disable_on_dock_buttons) {
@@ -131,40 +133,53 @@ export class SystemStatus {
         });
     }
 
-    update_status_msg(): void {
-        let status = "";
+    public on_soft_estop(ev: CustomEvent<{status: boolean}>): void {
+        this.is_soft_estop = ev.detail.status;
+        this.update_status_msg();
+        this.update_buttons();
+    }
+
+    private update_status_msg(): void {
+        const statuses = [];
 
         if (this.is_in_collision) {
-            status += '<span class="text-danger">COLLIDED!</span>';
+            statuses.push('<span class="text-danger">COLLIDED!</span>');
         }
 
         if (this.is_in_charging_station) {
-            status += ' Docked';
+            statuses.push('Docked');
         }
 
         if (this.is_stopped) {
-            status += ' (STOPPED)';
+            statuses.push('STOPPED');
+        }
+        else if (this.is_soft_estop) {
+            statuses.push('Soft emergency stop engaged');
         }
 
         // Should we have nothing out of the ordinary put some text in there.
-        if (status === '') {
-            status = "Normal";
+        if (statuses.length === 0) {
+            statuses.push("Normal");
         }
 
-        this.system_status_element.innerHTML = status;
+
+        this.system_status_element.innerHTML = statuses.join(', ');
     }
 
     private update_buttons(): void {
         // We can't go if charging.
+        const any_estop_active = this.is_charging || this.is_stopped || this.is_soft_estop;
+        let msg: string = null;
+        if (this.is_charging) {
+            msg = "Charging, cannot automatically undock. Manually pull the robot out of the charging dock.";
+        } else if (this.is_stopped) {
+            msg = "Stopped, press the Start button on the robot and close the lid to enable it.";
+        } else if (this.is_soft_estop) {
+            msg = "Soft emergency stop active. You can disable it with the green button in upper right corner.";
+        }
         for (const entry of this.disable_on_dock_buttons) {
-            entry.button.disabled = this.is_charging || this.is_stopped;
-            let msg = entry.default_tooltip;
-            if (this.is_charging) {
-                msg = "Charging, cannot automatically undock";
-            } else if (this.is_stopped) {
-                msg = "Stopped, press the Start button on the robot and close the lid to enable it.";
-            }
-            entry.button.setAttribute("title", msg);
+            entry.button.disabled = any_estop_active;
+            entry.button.setAttribute("title", msg === null ? entry.default_tooltip : msg);
         }
     }
 }

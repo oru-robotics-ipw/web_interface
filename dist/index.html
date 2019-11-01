@@ -26,32 +26,33 @@
 
     <div class="row">
         <div class="col">
-            <div class="row">
-                <div class="col">
-                    <div class="input-group flex-nowrap">
-                        <div class="input-group-prepend">
-                                <span class="input-group-text"
-                                      id="addon-destination">Destination</span>
-                        </div>
-                        <select id="select-destination" class="form-control" name="destination"
-                                aria-label="Destination" aria-describedby="addon-destination">
-                            <!-- See handlebar template locations-selector.handlebars -->
-                        </select>
-                    </div>
+            <div class="input-group flex-nowrap">
+                <div class="input-group-prepend">
+                        <span class="input-group-text"
+                              id="addon-destination">Destination</span>
                 </div>
-                <div class="col">
-                    <button type="button" id="btn-go" class="btn btn-success" title="Go to location" disabled>Go
-                    </button>
-                    <button type="button" id="btn-stop" class="btn btn-danger">Stop</button>
-                    <button type="button" id="btn-edit-locations" class="btn btn-secondary" data-toggle="modal"
-                            data-target="#editLocationsModal">Edit locations
-                    </button>
-                </div>
-                <div class="col form-check">
-                    <input type="checkbox" id="check-show-locations" class="form-check-input" checked />
-                    <label class="form-check-label" for="check-show-locations">Show location markers</label>
-                </div>
+                <select id="select-destination" class="form-control" name="destination"
+                        aria-label="Destination" aria-describedby="addon-destination">
+                    <!-- See handlebar template locations-selector.handlebars -->
+                </select>
             </div>
+        </div>
+        <div class="col">
+            <button type="button" id="btn-go" class="btn btn-success" title="Go to location" disabled>Go
+            </button>
+            <button type="button" id="btn-stop" class="btn btn-danger">Stop navigation</button>
+            <button type="button" id="btn-edit-locations" class="btn btn-secondary" data-toggle="modal"
+                    data-target="#editLocationsModal">Edit locations
+            </button>
+        </div>
+        <div class="col">
+            <button type="button" id="btn-estop" class="btn btn-danger">EMERGENCY STOP</button>
+            <button type="button" id="btn-reset-estop" class="btn btn-success d-none">Reset estop (resume)</button>
+        </div>
+        <div class="col- mr-3">
+            <button type="button" id="btn-settings" class="btn btn-secondary" data-toggle="modal"
+                    data-target="#settingsModal"><span class="oi oi-wrench"></span> Settings
+            </button>
         </div>
     </div>
 </div>
@@ -80,7 +81,37 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Settings modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check">
+                    <input type="checkbox" id="check-show-locations" class="form-check-input" checked/>
+                    <label class="form-check-label" for="check-show-locations">Show location markers</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="check-enable-sound" class="form-check-input" checked/>
+                    <label class="form-check-label" for="check-enable-sound">
+                        Enable sounds on navigation start/stop.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location editor modal -->
 <div class="modal fade" id="editLocationsModal" tabindex="-1" role="dialog" aria-labelledby="editLocationsModalLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">

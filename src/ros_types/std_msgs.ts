@@ -30,6 +30,16 @@ export class Header extends Message {
 
 }
 
+export class Bool extends Message {
+    data: boolean;
+
+    constructor(values: {
+        data?: boolean;
+    }) {
+        super(values);
+    }
+}
+
 export class UInt16 extends Message {
     data: number;
 
