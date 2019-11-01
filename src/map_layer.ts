@@ -44,6 +44,7 @@ export class MapLayer extends Layer {
      */
     constructor(canvas: HTMLCanvasElement, ros: Ros, url: string) {
         super(canvas, ros);
+        this.ctx.imageSmoothingEnabled = false;
         this.background_colour = '#cdcdcd';
         this.url = url;
         this.image = new Image();

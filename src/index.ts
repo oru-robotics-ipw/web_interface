@@ -152,6 +152,14 @@ function resize_canvas(): void {
 }
 
 // Setup
-window.addEventListener('resize', resize_canvas, false);
-window.addEventListener('orientationchange', resize_canvas, false);
-resize_canvas();
+window.addEventListener('resize', resize_canvas);
+window.addEventListener('orientationchange', resize_canvas);
+window.addEventListener('load', () => {
+    resize_canvas();
+    // Work around weird rendering glitch that don't always properly render all layers to begin with.
+    window.setTimeout(() => {
+        for (const layer of layers) {
+            layer.redraw();
+        }
+    }, 1000);
+});
