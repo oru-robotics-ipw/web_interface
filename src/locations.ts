@@ -22,7 +22,7 @@ import {MapLayer} from "./map_layer";
 import {Robot} from "./robot";
 import template_editor from './templates/location-editor.handlebars';
 import template_selector from './templates/location-selector.handlebars';
-import {Pose2D} from "./types";
+import {Point2D, Pose2D} from "./types";
 import {distance_l2, set_classes, timed_alert} from "./utils";
 
 interface Location extends Pose2D {
@@ -242,6 +242,7 @@ export class LocationsLayer extends Layer {
 
     constructor(props: {
         canvas: HTMLCanvasElement;
+        destination_selector: HTMLSelectElement;
         ros: Ros;
         checkbox: HTMLInputElement;
         tooltip: HTMLDivElement;
@@ -256,30 +257,29 @@ export class LocationsLayer extends Layer {
             this.enabled = props.checkbox.checked;
             this.redraw();
         });
+        // Show tooltip with name when hovering over destinations.
         this.canvas.addEventListener('mousemove', ev => {
             // HACK WARNING: This depends on our canvas being the top one in the stack. Otherwise we won't get events.
             if (this.enabled && this.map.is_ready()) {
                 const image_coord = {x: ev.offsetX, y: ev.offsetY};
-                const world_coord = this.map.image2world(image_coord);
-                let best = null;
-                let best_distance = 1e30;
-                for (const point of this.locations.locations_saved.values()) {
-                    const dist = distance_l2(world_coord, point);
-                    if (dist < best_distance)
-                    {
-                        best_distance = dist;
-                        best = point;
-                    }
-                }
+                const location = this.find_closest_location(image_coord);
                 // Only display tooltip if we found a match and it is reasonably close.
-                const found = best !== null && best_distance < 2.5;
-                if (found)
-                {
-                    props.tooltip.textContent = best.name;
+                if (location !== null) {
+                    props.tooltip.textContent = location.name;
                     props.tooltip.style.top = ev.clientY + 'px';
                     props.tooltip.style.left = ev.clientX + 'px';
                 }
-                set_classes(props.tooltip, found ? [] : ['d-none'], ['d-none']);
+                set_classes(props.tooltip, location !== null ? [] : ['d-none'], ['d-none']);
+            }
+        });
+        // Make clicking on the map select in destination selector.
+        this.canvas.addEventListener('click', ev => {
+            if (this.enabled && this.map.is_ready()) {
+                const image_coord = {x: ev.offsetX, y: ev.offsetY};
+                const location = this.find_closest_location(image_coord);
+                if (location !== null) {
+                    props.destination_selector.value = JSON.stringify(location);
+                }
             }
         });
 
@@ -289,6 +289,28 @@ export class LocationsLayer extends Layer {
         this.map.addEventListener('map_metadata_changed', () => {
             this.redraw();
         });
+    }
+
+    /**
+     * Find the closest stored location to an image coordinate.
+     * @param image_coord
+     */
+    find_closest_location(image_coord: Point2D): Location | null {
+        const world_coord = this.map.image2world(image_coord);
+        let best = null;
+        let best_distance = 1e30;
+        for (const point of this.locations.locations_saved.values()) {
+            const dist = distance_l2(world_coord, point);
+            if (dist < best_distance) {
+                best_distance = dist;
+                best = point;
+            }
+        }
+        // Only return match if it is reasonably close.
+        if (best !== null && best_distance < 2.0) {
+            return best;
+        }
+        return null;
     }
 
     redraw(): void {

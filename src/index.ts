@@ -133,6 +133,7 @@ const locationsLayer = new LocationsLayer({
     canvas: <HTMLCanvasElement>document.getElementById('locations_canvas'),
     checkbox: <HTMLInputElement>document.getElementById('check-show-locations'),
     tooltip: <HTMLDivElement>document.getElementById('mouse-tooltip'),
+    destination_selector: <HTMLSelectElement>document.getElementById("select-destination"),
     ros: ros,
     locations: locations,
     map: map
