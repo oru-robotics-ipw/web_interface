@@ -22,6 +22,14 @@ import * as oru_ipw_msgs from "./ros_types/oru_ipw_msgs";
 import {MessageConstants, ros_get_message_constants} from "./utils";
 
 /**
+ * Data about why controls are blocked (if they are blocked)
+ */
+export interface BlockDetails {
+    blocked: boolean;
+    reason: string;
+}
+
+/**
  * Metadata about a button that can be disabled
  */
 interface ButtonDisableData {
@@ -45,6 +53,7 @@ export class SystemStatus {
     public is_in_collision: boolean;
     public is_stopped: boolean;
     public is_soft_estop: boolean;
+    public block_status: BlockDetails;
 
     private readonly ros: Ros;
     private readonly battery_status_sub: Topic;
@@ -133,7 +142,7 @@ export class SystemStatus {
         });
     }
 
-    public on_soft_estop(ev: CustomEvent<{status: boolean}>): void {
+    public on_soft_estop(ev: CustomEvent<{ status: boolean }>): void {
         this.is_soft_estop = ev.detail.status;
         this.update_status_msg();
         this.update_buttons();
@@ -152,8 +161,7 @@ export class SystemStatus {
 
         if (this.is_stopped) {
             statuses.push('STOPPED');
-        }
-        else if (this.is_soft_estop) {
+        } else if (this.is_soft_estop) {
             statuses.push('Soft emergency stop engaged');
         }
 
@@ -168,7 +176,7 @@ export class SystemStatus {
 
     private update_buttons(): void {
         // We can't go if charging.
-        const any_estop_active = this.is_charging || this.is_stopped || this.is_soft_estop;
+        const any_block_active = this.is_charging || this.is_stopped || this.is_soft_estop;
         let msg: string = null;
         if (this.is_charging) {
             msg = "Charging, cannot automatically undock. Manually pull the robot out of the charging dock.";
@@ -177,8 +185,9 @@ export class SystemStatus {
         } else if (this.is_soft_estop) {
             msg = "Soft emergency stop active. You can disable it with the green button in upper right corner.";
         }
+        this.block_status = {blocked: any_block_active, reason: msg};
         for (const entry of this.disable_on_dock_buttons) {
-            entry.button.disabled = any_estop_active;
+            entry.button.disabled = any_block_active;
             entry.button.setAttribute("title", msg === null ? entry.default_tooltip : msg);
         }
     }

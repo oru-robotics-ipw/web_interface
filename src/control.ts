@@ -17,6 +17,7 @@
  */
 
 import {ActionClient, Goal, Ros, Service, ServiceRequest, Topic} from "roslib";
+import {Destination} from "./locations";
 import {MapLayer} from "./map_layer";
 import {Robot} from "./robot";
 import {Mode} from "./ros_types/am_driver";
@@ -105,9 +106,12 @@ export class Control {
      * This is public since it is also triggered when double clicking in the locations layer.
      */
     public on_go(): void {
-        const coord_str = this.destination_selector.value;
-        const coords = JSON.parse(coord_str);
-        console.log("Go to:", coords);
+        if (this.status.block_status.blocked) {
+            const msg = "Cannot travel: " + this.status.block_status.reason;
+            console.log(msg);
+            timed_alert(this.status_alert, msg, "alert-danger", 5000);
+            return;
+        }
         if (this.status.is_in_charging_station) {
             this.undock_service.callService(new ServiceRequest({}),
                 (response: std_srvs.TriggerResponse) => {
@@ -115,9 +119,22 @@ export class Control {
                         const msg = "Failed to exit charging station:" + response.message;
                         console.log(msg);
                         timed_alert(this.status_alert, msg, "alert-warning", 5000);
+                    } else {
+                        this.issue_planning();
                     }
                 });
+        } else {
+            this.issue_planning();
         }
+    }
+
+    /**
+     * Actually issue command to move_base
+     */
+    private issue_planning(): void {
+        const coord_str = this.destination_selector.value;
+        const coords: Destination = JSON.parse(coord_str);
+        console.log("Go to:", coords);
         if (this.current_goal) {
             this.current_goal.cancel();
         }
@@ -135,7 +152,7 @@ export class Control {
                 }
             }
         });
-        this.robot.target_location = {x: coords[0], y: coords[1], theta: coords[2]};
+        this.robot.target_location = coords;
 
         this.current_goal.on('result', (result: move_base_msgs.MoveBaseActionResult) => {
             console.log('Final Result:', result);
@@ -154,7 +171,6 @@ export class Control {
         if (this.sound_checkbox.checked) {
             this.mode_cmd.publish(new UInt16({data: Mode.MODE_SOUND_LONG_BEEP}));
         }
-
     }
 
     private on_stop(): void {

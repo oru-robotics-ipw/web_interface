@@ -25,7 +25,7 @@ import template_selector from './templates/location-selector.handlebars';
 import {Point2D, Pose2D} from "./types";
 import {distance_l2, set_classes, timed_alert} from "./utils";
 
-interface Location extends Pose2D {
+export interface Destination extends Pose2D {
     id: number;
     name: string;
 }
@@ -35,7 +35,7 @@ interface Location extends Pose2D {
  * Handle locations: loading, saving and editing.
  */
 export class Locations extends EventTarget {
-    public locations_saved: Map<string, Location>;
+    public locations_saved: Map<string, Destination>;
     private readonly ros: Ros;
     private readonly robot: Robot;
     private readonly editor_table: HTMLElement;
@@ -45,7 +45,7 @@ export class Locations extends EventTarget {
     private readonly status_alert: HTMLElement;
     private readonly edit_alert: HTMLElement;
     private readonly edit_alert_row: HTMLElement;
-    private locations_editor: Map<string, Location>;
+    private locations_editor: Map<string, Destination>;
     private id_counter: number;
 
     private readonly next_id_param: Param;
@@ -143,7 +143,7 @@ export class Locations extends EventTarget {
      */
     private save_to_parameters(): void {
         this.next_id_param.set(this.id_counter);
-        const as_array: Location[] = [];
+        const as_array: Destination[] = [];
         this.locations_saved.forEach(v => {
             as_array.push(v);
         });
@@ -324,7 +324,7 @@ export class LocationsLayer extends Layer {
      * Find the closest stored location to an image coordinate.
      * @param image_coord
      */
-    private find_closest_location(image_coord: Point2D): Location | null {
+    private find_closest_location(image_coord: Point2D): Destination | null {
         const world_coord = this.map.image2world(image_coord);
         let best = null;
         let best_distance = 1e30;
