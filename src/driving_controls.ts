@@ -67,24 +67,24 @@ class DrivingButton {
 
         props.button.addEventListener('mousedown', () => {
             start();
-        });
+        }, {passive: true});
         props.button.addEventListener('touchstart', () => {
             start();
-        });
+        }, {passive: true});
 
         props.button.addEventListener('mouseup', () => {
             stop();
-        });
+        }, {passive: true});
 
         props.button.addEventListener('mouseleave', () => {
             stop();
-        });
+        }, {passive: true});
         props.button.addEventListener('touchleave', () => {
             stop();
-        });
+        }, {passive: true});
         props.button.addEventListener('touchcancel', () => {
             stop();
-        });
+        }, {passive: true});
     }
 }
 
