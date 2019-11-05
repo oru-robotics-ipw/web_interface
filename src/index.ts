@@ -23,7 +23,7 @@ import {Ros, TFClient} from 'roslib';
 import {Control} from "./control";
 import {DrivingControls} from "./driving_controls";
 import {Estop} from "./estop";
-import {Locations, LocationsLayer} from "./locations";
+import {Destination, Locations, LocationsLayer} from "./locations";
 import {MapLayer} from "./map_layer";
 import {People} from "./people";
 import {Robot} from "./robot";
@@ -148,6 +148,9 @@ const locationsLayer = new LocationsLayer({
 });
 locationsLayer.addEventListener('start_navigation', () => {
    control.on_go();
+});
+control.addEventListener('robot-goal', (ev: CustomEvent<Destination | null>) => {
+    locationsLayer.target_location = ev.detail;
 });
 
 

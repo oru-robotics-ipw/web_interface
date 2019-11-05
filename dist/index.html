@@ -40,7 +40,7 @@
         <div class="col">
             <button type="button" id="btn-go" class="btn btn-success" title="Go to location" disabled>Go
             </button>
-            <button type="button" id="btn-stop" class="btn btn-danger">Stop navigation</button>
+            <button type="button" id="btn-stop" class="btn btn-danger d-none ">Stop navigation</button>
             <button type="button" id="btn-edit-locations" class="btn btn-secondary" data-toggle="modal"
                     data-target="#editLocationsModal">Edit locations
             </button>
@@ -62,13 +62,13 @@
         <canvas id="map" style="z-index: 1;" width="800" height="600" class="rounded">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="robot" style="z-index: 2;" width="800" height="600">
+        <canvas id="people" style="z-index: 2;" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="people" style="z-index: 3;" width="800" height="600">
+        <canvas id="locations_canvas" style="z-index: 3;" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="locations_canvas" style="z-index: 4;" width="800" height="600">
+        <canvas id="robot" style="z-index: 4;" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
         <div id="status-alert" style="z-index: 10"
@@ -169,11 +169,14 @@
                             </table>
                         </div>
                         <div class="col div-center">
-                            <select id="select-speed" name="select-speed" class="form-control">
-                                <option value="[0.1,0.3]">Slow</option>
-                                <option value="[0.3,0.7]" selected="selected">Medium</option>
-                                <option value="[0.7,1.0]">Fast</option>
-                            </select>
+                            <div class="form-group">
+                                <label for="select-speed">Speed</label>
+                                <select id="select-speed" name="select-speed" class="form-control">
+                                    <option value="[0.1,0.3]">Slow</option>
+                                    <option value="[0.3,0.7]" selected="selected">Medium</option>
+                                    <option value="[0.7,1.0]">Fast</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 

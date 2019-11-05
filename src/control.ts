@@ -31,7 +31,7 @@ import {timed_alert, yaw_to_quaternion} from "./utils";
 /**
  * Handles sending driving & planning commands to robot.
  */
-export class Control {
+export class Control extends EventTarget {
     private readonly ros: Ros;
     private readonly robot: Robot;
     private readonly map: MapLayer;
@@ -44,8 +44,11 @@ export class Control {
     private readonly undock_service: Service;
     private readonly tif_service: Service;
     private readonly mode_cmd: Topic;
+    private readonly stop_button: HTMLButtonElement;
+    private readonly go_button: HTMLButtonElement;
 
-    private current_goal: Goal;
+    private current_goal: Goal | null = null;
+    private goal_counter = 0;
 
     constructor(options: {
         robot: Robot;
@@ -58,6 +61,7 @@ export class Control {
         status: SystemStatus;
         status_alert: HTMLElement;
     }) {
+        super();
         this.ros = options.ros;
         this.robot = options.robot;
         this.map = options.map;
@@ -65,6 +69,8 @@ export class Control {
         this.destination_selector = options.destination_selector;
         this.status_alert = options.status_alert;
         this.sound_checkbox = options.sound_checkbox;
+        this.stop_button = options.stop_button;
+        this.go_button = options.go_button;
 
         this.move_base_client = new ActionClient({
             ros: this.ros,
@@ -72,7 +78,6 @@ export class Control {
             actionName: 'move_base_msgs/MoveBaseAction',
             timeout: 2,
         });
-        this.current_goal = undefined;
 
         this.undock_service = new Service({
             ros: this.ros,
@@ -95,7 +100,7 @@ export class Control {
         options.go_button.addEventListener("click", () => {
             this.on_go();
         });
-        options.stop_button.addEventListener("click", () => {
+        this.stop_button.addEventListener("click", () => {
             this.on_stop();
         });
     }
@@ -132,12 +137,16 @@ export class Control {
      * Actually issue command to move_base
      */
     private issue_planning(): void {
-        const coord_str = this.destination_selector.value;
-        const coords: Destination = JSON.parse(coord_str);
-        console.log("Go to:", coords);
+        this.goal_counter += 1;
+        const goal_id = this.goal_counter;
         if (this.current_goal) {
             this.current_goal.cancel();
         }
+        const coord_str = this.destination_selector.value;
+        const coords: Destination = JSON.parse(coord_str);
+        console.log("Go to:", coords);
+        this.go_button.classList.add('d-none');
+        this.stop_button.classList.remove('d-none');
         this.current_goal = new Goal({
             actionClient: this.move_base_client,
             goalMessage: <move_base_msgs.MoveBaseGoal>{
@@ -152,7 +161,7 @@ export class Control {
                 }
             }
         });
-        this.robot.target_location = coords;
+        this.dispatchEvent(new CustomEvent<Destination | null>('robot-goal', {detail: coords}));
 
         this.current_goal.on('result', (result: move_base_msgs.MoveBaseActionResult) => {
             console.log('Final Result:', result);
@@ -164,7 +173,7 @@ export class Control {
             }
             // Also indicate with a popup, again we don't know if it was successful or not.
             timed_alert(this.status_alert, "Navigation ended", "alert-info", 5000);
-            this.remove_goal();
+            this.remove_goal(goal_id);
         });
 
         this.current_goal.send();
@@ -177,12 +186,21 @@ export class Control {
         console.log("Stop command issued!");
         if (this.current_goal) {
             this.current_goal.cancel();
-            this.remove_goal();
+            this.remove_goal(this.goal_counter);
         }
     }
 
-    private remove_goal(): void {
-        this.current_goal = undefined;
-        this.robot.target_location = undefined;
+    /**
+     * Clean up the current goal.
+     *
+     * @param goal_id Counter value used to prevent race conditions
+     */
+    private remove_goal(goal_id: number): void {
+        if (goal_id == this.goal_counter) {
+            this.current_goal = null;
+            this.dispatchEvent(new CustomEvent<Destination | null>('robot-goal', {detail: null}));
+            this.go_button.classList.remove('d-none');
+            this.stop_button.classList.add('d-none');
+        }
     }
 }

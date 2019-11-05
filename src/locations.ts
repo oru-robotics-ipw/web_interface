@@ -295,12 +295,30 @@ export class LocationsLayer extends Layer {
         });
     }
 
+    private _target_location: Pose2D = null;
+
+    get target_location(): Pose2D {
+        return this._target_location;
+    }
+
+    set target_location(value: Pose2D) {
+        this._target_location = value;
+        this.redraw();
+    }
+
     redraw(): void {
         super.redraw();
         if (this.enabled && this.map.is_ready()) {
             for (const e of this.locations.locations_saved.values()) {
                 this.draw_pose({theta: e.theta, ...this.map.world2image(e)}, "brown");
             }
+        }
+        if (this.target_location !== null) {
+            this.draw_pose({
+                    theta: this.target_location.theta,
+                    ...this.map.world2image(this.target_location),
+                },
+                "red");
         }
     }
 

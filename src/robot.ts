@@ -42,7 +42,6 @@ export class Robot extends Layer {
         super(canvas, ros);
         this.map = map;
         this.robot_transform = undefined;
-        this._target_location = undefined;
         this.tf_client = tf_client;
 
         // Event listeners
@@ -50,26 +49,6 @@ export class Robot extends Layer {
             this.robot_transform = tf;
             this.redraw();
         });
-
-        /*
-        this.canvas.addEventListener('click', (event) => {
-            const image_coord = [event.offsetX, event.offsetY];
-            const world_coord = this.map.image2world(image_coord);
-            document.getElementById('coord').textContent = `${world_coord}`;
-            //this.draw_circle(image_coord, 'red');
-        });
-        */
-    }
-
-    private _target_location: Pose2D;
-
-    get target_location(): Pose2D {
-        return this._target_location;
-    }
-
-    set target_location(value: Pose2D) {
-        this._target_location = value;
-        this.redraw();
     }
 
     get world_location(): Pose2D {
@@ -89,14 +68,6 @@ export class Robot extends Layer {
                 },
                 "green"
             );
-        }
-
-        if (this.target_location) {
-            this.draw_pose({
-                    theta: this.target_location.theta,
-                    ...this.map.world2image(this.target_location),
-                },
-                "red");
         }
     }
 }

@@ -36,6 +36,11 @@ $icon-font-path: '~open-iconic/font/fonts/';
   }
 }
 
+// The robot canvas layer should not handle mouse
+#robot {
+  pointer-events: none;
+}
+
 // This is for floating alerts on top of the main map view
 .floating-alert {
   top: 5%;
