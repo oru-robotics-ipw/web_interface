@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {identity, Matrix, multiply} from 'mathjs';
+import {matrix, Matrix, multiply} from 'mathjs';
 import {Ros, TFClient, Topic} from "roslib";
 import {Layer} from "./layer";
 import {MapLayer} from "./map_layer";
@@ -49,7 +49,7 @@ export class People extends Layer {
         this.tf_client = tf_client;
 
         this.people_poses = [];
-        this.odom_matrix = <Matrix>identity(3);
+        this.odom_matrix = matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]]);
 
         // Event listeners
         this.tf_client.subscribe('odom', tf => {
