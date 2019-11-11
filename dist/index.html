@@ -59,23 +59,42 @@
 
 <div class="container-fluid my-3" id="main">
     <div class="canvas-wrapper" id="canvas-wrapper">
-        <canvas id="map" style="z-index: 1;" width="800" height="600" class="rounded">
+        <canvas id="map" width="800" height="600" class="rounded">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="people" style="z-index: 2;" width="800" height="600">
+        <canvas id="people" swidth="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="locations_canvas" style="z-index: 3;" width="800" height="600">
+        <canvas id="locations_canvas" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <canvas id="robot" style="z-index: 4;" width="800" height="600">
+        <canvas id="robot" width="800" height="600">
             Your browser doesn't support HTML5 canvas. You are out of luck using this web site.
         </canvas>
-        <div id="status-alert" style="z-index: 10"
+        <div id="legend" class="container-fluid m-2 p-0">
+            <div class="row justify-content-end w-100">
+                <div class="col- card semi-transparent alert alert-secondary alert-dismissible fade show" role="alert">
+                    <div class="card-body">
+                        <h5 class="card-title">Legend</h5>
+                        <ul>
+                            <li class="legend-robot"> Robot</li>
+                            <li class="legend-location"> Available destinations</li>
+                            <li class="legend-current-goal"> Current destination</li>
+                            <li class="legend-person"> Detected humans</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="status-alert"
              class="alert alert-info floating-alert fade show semi-transparent d-none" role="alert">
             Some status or other
         </div>
-        <div id="connection-alert" style="z-index: 10" class="alert alert-info floating-alert" role="alert">
+        <div id="connection-alert"
+             class="alert alert-info floating-alert" role="alert">
             Connecting to robot controller...
         </div>
     </div>

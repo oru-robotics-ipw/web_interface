@@ -66,7 +66,7 @@ export class Robot extends Layer {
                     theta: get_yaw(this.robot_transform.rotation),
                     ...this.map.world2image(this.robot_transform.translation),
                 },
-                "green"
+                getComputedStyle(document.documentElement).getPropertyValue("--robot-colour")
             );
         }
     }

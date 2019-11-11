@@ -310,15 +310,20 @@ export class LocationsLayer extends Layer {
         super.redraw();
         if (this.enabled && this.map.is_ready()) {
             for (const e of this.locations.locations_saved.values()) {
-                this.draw_pose({theta: e.theta, ...this.map.world2image(e)}, "brown");
+                this.draw_pose(
+                    {theta: e.theta, ...this.map.world2image(e)},
+                    getComputedStyle(document.documentElement).getPropertyValue("--location-colour")
+                );
             }
         }
         if (this.target_location !== null) {
-            this.draw_pose({
+            this.draw_pose(
+                {
                     theta: this.target_location.theta,
                     ...this.map.world2image(this.target_location),
                 },
-                "red");
+                getComputedStyle(document.documentElement).getPropertyValue("--current-goal-colour")
+            );
         }
     }
 

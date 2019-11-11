@@ -92,8 +92,10 @@ export class People extends Layer {
     redraw(): void {
         super.redraw();
         for (const person of this.people_poses) {
-            this.draw_pose({theta: person.theta, ...this.map.world2image(person)},
-                "blue");
+            this.draw_pose(
+                {theta: person.theta, ...this.map.world2image(person)},
+                getComputedStyle(document.documentElement).getPropertyValue("--person-colour")
+            );
         }
     }
 }

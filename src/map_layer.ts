@@ -18,7 +18,6 @@
 
 import {Ros, Topic} from "roslib";
 import {Layer} from "./layer";
-import {Pose} from "./ros_types/geometry_msgs";
 import * as map_web_republisher from "./ros_types/map_web_republisher";
 import * as nav_msgs from "./ros_types/nav_msgs";
 import {Point2D} from "./types";
@@ -45,7 +44,8 @@ export class MapLayer extends Layer {
     constructor(canvas: HTMLCanvasElement, ros: Ros, url: string) {
         super(canvas, ros);
         this.ctx.imageSmoothingEnabled = false;
-        this.background_colour = '#cdcdcd';
+        this.background_colour = getComputedStyle(document.documentElement).getPropertyValue(
+            "--map-background-colour");
         this.url = url;
         this.image = new Image();
         this.map_metadata_listener = new Topic({

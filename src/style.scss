@@ -21,12 +21,35 @@
 $icon-font-path: '~open-iconic/font/fonts/';
 @import "~open-iconic/font/css/open-iconic-bootstrap.scss";
 
+// Define colours used for drawing stuff in the layers
+$layer-colours: (
+        "robot": green,
+        "person": blue,
+        "location": brown,
+        "current-goal": red,
+);
+
+// Export it as CSS variables so the JavaScript can get at it
+:root {
+  @each $name, $colour in $layer-colours {
+    --#{$name}-colour: #{$colour};
+  }
+  --map-background-colour: #cdcdcd;
+}
+
+// Classes for showing colours in the legend
+@each $name, $colour in $layer-colours {
+  .legend-#{$name} {
+    color: $colour;
+  }
+}
+
 .canvas-wrapper {
   position: relative;
   width: 100%;
   height: 500px;
 
-  * {
+  > * {
     position: absolute;
   }
 
@@ -36,9 +59,35 @@ $icon-font-path: '~open-iconic/font/fonts/';
   }
 }
 
+#map {
+  z-index: 1;
+}
+
+#locations_canvas {
+  z-index: 2;
+}
+
+#people {
+  pointer-events: none;
+  z-index: 3;
+}
+
 // The robot canvas layer should not handle mouse
 #robot {
   pointer-events: none;
+  z-index: 4;
+}
+
+#legend {
+  left: 0;
+  top: 0;
+  z-index: 10;
+}
+
+$alert-z-index: 11;
+
+#status-alert, #connection-alert {
+  z-index: $alert-z-index;
 }
 
 // This is for floating alerts on top of the main map view
@@ -78,5 +127,5 @@ $icon-font-path: '~open-iconic/font/fonts/';
   position: fixed;
   overflow: hidden;
   z-index: 100;
-  pointer-events:none;
+  pointer-events: none;
 }
