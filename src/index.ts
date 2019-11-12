@@ -16,7 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import 'bootstrap';
+// Import for side effects (registering with jQuery)
+import 'bootstrap/js/src/alert';
+import 'bootstrap/js/src/button';
+import 'bootstrap/js/src/modal';
 
 import jQuery from 'jquery';
 import {Ros, TFClient} from 'roslib';
@@ -147,7 +150,7 @@ const locationsLayer = new LocationsLayer({
     map: map
 });
 locationsLayer.addEventListener('start_navigation', () => {
-   control.on_go();
+    control.on_go();
 });
 control.addEventListener('robot-goal', (ev: CustomEvent<Destination | null>) => {
     locationsLayer.target_location = ev.detail;

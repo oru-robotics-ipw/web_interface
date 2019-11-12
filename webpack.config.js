@@ -1,5 +1,6 @@
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
 module.exports = {
     mode: 'development',
     devtool: 'source-map',
@@ -58,7 +59,7 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.jsx'],
         alias: {
-            jquery: "jquery/src/jquery"
+            jquery: "jquery/dist/jquery.slim.min.js"
         }
     },
     output: {
