@@ -53,6 +53,9 @@
             <button type="button" id="btn-settings" class="btn btn-secondary" data-toggle="modal"
                     data-target="#settingsModal"><span class="oi oi-wrench"></span> Settings
             </button>
+            <button type="button" id="btn-help" class="btn btn-secondary" data-toggle="modal"
+                    data-target="#helpModal"><span class="oi oi-question-mark"></span> Help
+            </button>
         </div>
     </div>
 </div>
@@ -83,7 +86,12 @@
                             <li class="legend-person"> Detected humans</li>
                         </ul>
                     </div>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <!--
+                        On small devices, allow the user to close the legend. We don't allow closing it on larger
+                        devices, since there is currently no way to reopen it. Minimising would be better, but that is
+                        not built into bootstrap, and thus would require coding it.
+                    -->
+                    <button type="button" class="close d-md-none" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -96,6 +104,44 @@
         <div id="connection-alert"
              class="alert alert-info floating-alert" role="alert">
             Connecting to robot controller...
+        </div>
+    </div>
+</div>
+
+<!-- Help modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpModalLabel">Help</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Navigation</h5>
+                Using the map:
+                <ul>
+                    <li>Click a destination on the map to select it.</li>
+                    <li>Double click a destination on the map to drive to it.</li>
+                </ul>
+                Using the drop down:
+                <ol>
+                    <li>Select a destination in the drop down in the top left.</li>
+                    <li>Click <em>Go</em>.</li>
+                </ol>
+                <h5>Editing locations</h5>
+                <ol>
+                    <li>Click <em>Edit locations</em></li>
+                    <li>Press and hold arrow buttons to manually drive the robot to the location you want to store</li>
+                    <li>Enter a name for it and click <em>Add current location</em></li>
+                    <li>When done click <em>Save changes</em></li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>

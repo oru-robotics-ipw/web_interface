@@ -47,7 +47,7 @@ $layer-colours: (
         "current-goal": red,
 );
 
-// Export it as CSS variables so the JavaScript can get at it
+// Export the colours as CSS variables so the JavaScript code can query the values
 :root {
   @each $name, $colour in $layer-colours {
     --#{$name}-colour: #{$colour};
@@ -67,16 +67,19 @@ $layer-colours: (
   width: 100%;
   height: 500px;
 
+  // Direct children should use absolute positioning.
   > * {
     position: absolute;
   }
 
-  canvas {
+  // Direct child canvases should be positioned top left.
+  > canvas {
     top: 0;
     left: 0;
   }
 }
 
+// Define z indexes for the various layers on top of the map.
 #map {
   z-index: 1;
 }
@@ -85,12 +88,11 @@ $layer-colours: (
   z-index: 2;
 }
 
+// The location layer handles mouse clicks, thus full size layers above need pointer-events: none set.
 #people {
   pointer-events: none;
   z-index: 3;
 }
-
-// The robot canvas layer should not handle mouse
 #robot {
   pointer-events: none;
   z-index: 4;
@@ -108,7 +110,17 @@ $alert-z-index: 11;
   z-index: $alert-z-index;
 }
 
-// This is for floating alerts on top of the main map view
+// The mouse tooltip is used to display the name of locations on mousing over them.
+#mouse-tooltip {
+  @extend .tooltip-inner;
+  display: block;
+  position: fixed;
+  overflow: hidden;
+  z-index: 100;
+  pointer-events: none;
+}
+
+// This is for the floating alerts on top of the main map view
 .floating-alert {
   top: 5%;
   left: 25%;
@@ -137,13 +149,4 @@ $alert-z-index: 11;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-#mouse-tooltip {
-  @extend .tooltip-inner;
-  display: block;
-  position: fixed;
-  overflow: hidden;
-  z-index: 100;
-  pointer-events: none;
 }
