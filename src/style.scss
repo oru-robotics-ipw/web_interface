@@ -99,6 +99,7 @@ $layer-colours: (
 }
 
 #legend {
+  pointer-events: none;
   left: 0;
   top: 0;
   z-index: 10;
