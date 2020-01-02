@@ -144,7 +144,7 @@ constructor
 echo "}"
 
 if [[ "${#UNKNOWN_TYPES[@]}" -gt 0 ]]; then
-		echo -e "\n\e[1mUnknown type encountered while processing (may be local from same package):\e[0m"
+	echo -e "\n\e[1mUnknown type encountered while processing (may be local from same package):\e[0m"
 	for t in "${UNKNOWN_TYPES[@]}"; do
 		echo -e " - ${t}"
 	done
