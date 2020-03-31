@@ -1,5 +1,7 @@
 # ORU IPW robot control panel
 
+Note: Project is done. No further development is planned.
+
 ## Main technologies
 
 * [Webpack]() is used for building the web site.
